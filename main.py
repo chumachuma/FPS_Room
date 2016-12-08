@@ -5,6 +5,7 @@ class Game:
         MAIN_LOOP = True
         FPS = 30
         BG_COLOR = (200, 200, 200)
+        CAPTURE_MOUSE = False
 
         clock = pygame.time.Clock() #for using less CPU, events are queued, may miss
         
@@ -17,8 +18,15 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    return
+                elif event.type == pygame.KEYDOWN: 
+                    if event.key == pygame.K_ESCAPE:
+                        return
+                    if event.key == pygame.K_LCTRL or event.key == pygame.K_RCTRL:
+                        CAPTURE_MOUSE = not CAPTURE_MOUSE
+                        pygame.mouse.set_visible(not CAPTURE_MOUSE) 
+                        pygame.event.set_grab(CAPTURE_MOUSE)
+                print(pygame.mouse.get_pressed())
+                print(pygame.mouse.get_rel())
                 
                 screen.fill(BG_COLOR) #background color
 
