@@ -6,15 +6,6 @@ class Game:
         
         sprites = pygame.sprite.Group()
         self.player = Player(sprites)
-        self.walls=pygame.sprite.Group()
-        block = pygame.image.load("DBall.png")
-        for x in range (0, 640, 54): #54 size of image
-            for y in range (0, 480, 54):
-                if x in (0, 640-54) or y in (0,480-54):
-                    wall = pygame.sprite.Sprite(self.walls)
-                    wall.image = block
-                    wall.rect = pygame.rect.Rect((x,y), (54,32))
-        sprites.add(self.walls)
         
         while 1:
             clock.tick(30) # microsleep, doesn't invoke more than 30 times/s
@@ -48,8 +39,6 @@ class Player (pygame.sprite.Sprite):
             self.rect.y -= 300*dt
         if key[pygame.K_DOWN] or key[pygame.K_s]:
             self.rect.y += 300*dt
-        for cell in pygame.sprite.spritecollide(self, game.walls, False):
-            self.rect = last
         
 
     
