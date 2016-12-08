@@ -2,22 +2,27 @@ import pygame
 
 class Game:
     def main (self, screen):
+        MAIN_LOOP = True
+        FPS = 30
+        BG_COLOR = (200, 200, 200)
+
         clock = pygame.time.Clock() #for using less CPU, events are queued, may miss
         
         sprites = pygame.sprite.Group()
         self.player = Player(sprites)
         
-        while 1:
-            clock.tick(30) # microsleep, doesn't invoke more than 30 times/s
-            dt = clock.tick(30)
+        while MAIN_LOOP:
+            clock.tick(FPS) #microsleep, doesn't invoke more than 30 times/s
+            dt = clock.tick(FPS)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     return
                 
+                screen.fill(BG_COLOR) #background color
+
                 sprites.update(dt/1000., self)#groups
-                screen.fill((200, 200, 200)) #background color
                 sprites.draw(screen)
                 pygame.display.flip() #tearing, double buffering->display buffer/drawing bugffer
 
