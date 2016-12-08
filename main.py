@@ -1,6 +1,9 @@
 import pygame
 
 class Game:
+    def __call__ (self, screen):
+        self.main(screen)
+
     def main (self, screen):
         MAIN_LOOP = True
         FPS = 30
@@ -58,6 +61,6 @@ class Player (pygame.sprite.Sprite):
 if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode((640, 480))
-    G = Game()
-    G.main(screen)
+    game = Game()
+    game(screen)
     pygame.quit()
