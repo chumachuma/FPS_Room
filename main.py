@@ -61,7 +61,7 @@ class Target (pygame.sprite.Sprite):
     def __init__ (self, *groups):
         super(Target, self).__init__(groups[0])
         self.screen = groups[1]
-        self.image = pygame.image.load('DBall.png')
+        self.image = pygame.image.load("./img/target.png")
         self.shootST = pygame.mixer.Sound("./sound/9mmGunshot.wav")
         self.radius = 16
         self.radius2 = self.radius**2 
