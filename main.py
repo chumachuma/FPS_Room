@@ -2,15 +2,15 @@ import pygame
 from random import uniform as random
 
 class Game:
-    def __init__ (self):
+    def __init__ (self, screen):
         self.isMouseCaptured = False
-
-    def __call__ (self, screen):
-        self.main(screen)
-
-    def main (self, screen):
         self.screen = screen
 
+    def __call__ (self):
+        self.main()
+        self.exit()
+
+    def main (self):
         MAIN_LOOP = True
         FPS = 60
         BG_COLOR = (200, 200, 200)
@@ -26,14 +26,7 @@ class Game:
         while MAIN_LOOP:
             clock.tick(FPS)
             dt = clock.get_time()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    return
-                elif event.type == pygame.KEYDOWN: 
-                    if event.key == pygame.K_ESCAPE:
-                        return
-                    if event.key == pygame.K_LCTRL or event.key == pygame.K_RCTRL:
-                        self.toggleCaptureMouse()
+            MAIN_LOOP = self.gameEvent()
 
             self.mouseIncrement = pygame.mouse.get_rel()
             #self.screen.fill(BG_COLOR) #background color
@@ -43,10 +36,23 @@ class Game:
             pygame.display.flip() #tearing, double buffering->display buffer/drawing bugffer
             #print("\r %i     "%int(clock.get_fps()), end='')
 
+    def exit (self):
+        pass
+
+    def gameEvent (self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return False
+            elif event.type == pygame.KEYDOWN: 
+                if event.key == pygame.K_ESCAPE:
+                    return False
+                if event.key == pygame.K_LCTRL or event.key == pygame.K_RCTRL:
+                    self.toggleCaptureMouse()
+        return True
+
     def loadCrosshair (self):
         crosshairSize = (32, 32)
         center = ((self.screen.get_width()-crosshairSize[0])/2, (self.screen.get_height()-crosshairSize[1])/2)
-        print(center)
         crosshair = pygame.sprite.Group()
         crosshairImg = pygame.image.load("./img/crosshair.png")
         crosshairImg = pygame.transform.scale(crosshairImg, crosshairSize)
@@ -111,11 +117,10 @@ class Target (pygame.sprite.Sprite):
 
 class Background:
     def __init__ (self, screen):
-        self.screen = screen
         self.image = pygame.image.load("./img/grid.png")
         self.size = self.image.get_width()
-        self.columns = self.screen.get_width()//self.size + 3
-        self.rows = self.screen.get_height()//self.size + 3
+        self.columns = screen.get_width()//self.size + 3
+        self.rows = screen.get_height()//self.size + 3
         self.xPos = 0
         self.yPos = 0
 
@@ -127,12 +132,12 @@ class Background:
 
         for i in range(self.columns):
             for j in range(self.rows):
-                self.screen.blit(self.image, ((i-1)*self.size+self.xPos, (j-1)*self.size+self.yPos))
+                game.screen.blit(self.image, ((i-1)*self.size+self.xPos, (j-1)*self.size+self.yPos))
 
 if __name__ == '__main__':
     pygame.init()
     print(pygame.display.Info())
     screen = pygame.display.set_mode((1280, 720))
-    game = Game()
-    game(screen)
+    game = Game(screen)
+    game()
     pygame.quit()
