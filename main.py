@@ -18,6 +18,7 @@ class Game:
         clock = pygame.time.Clock() #for using less CPU, events are queued, may miss
         
         sprites = pygame.sprite.OrderedUpdates()
+        self.background = Background(self.screen)
         self.target = Target(sprites, self.screen)
         sprites.add(self.loadCrosshair())
         self.toggleCaptureMouse()
@@ -34,7 +35,9 @@ class Game:
                     if event.key == pygame.K_LCTRL or event.key == pygame.K_RCTRL:
                         self.toggleCaptureMouse()
 
+            self.mouseIncrement = pygame.mouse.get_rel()
             self.screen.fill(BG_COLOR) #background color
+            self.background.update(dt, self)
             sprites.update(dt, self)#groups
             sprites.draw(self.screen)
             pygame.display.flip() #tearing, double buffering->display buffer/drawing bugffer
@@ -74,9 +77,8 @@ class Target (pygame.sprite.Sprite):
         self.timeLived += dt
         if self.timeLived > self.timeToLive:
             self.respawn()
-        movement_increment = pygame.mouse.get_rel()
-        self.rect.x -= movement_increment[0]
-        self.rect.y -= movement_increment[1]
+        self.rect.x -= game.mouseIncrement[0]
+        self.rect.y -= game.mouseIncrement[1]
         if pygame.mouse.get_pressed()[0]:
             self.shoot()
 
@@ -93,6 +95,28 @@ class Target (pygame.sprite.Sprite):
         self.rect.x = random(0, self.screen.get_width())
         self.rect.y = random(0, self.screen.get_height())
 
+class Background:
+    def __init__ (self, screen):
+        self.screen = screen
+        self.image = pygame.image.load("./img/grid.png")
+        self.size = self.image.get_width()
+        self.height = self.screen.get_height()
+        self.width = self.screen.get_width()
+        self.columns = self.width//self.size + 3
+        self.rows = self.height//self.size + 3
+        self.rect = pygame.rect.Rect((0,0), self.image.get_size())
+        self.xPos = 0
+        self.yPos = 0
+
+    def update (self, dt, game):
+        self.xPos -= game.mouseIncrement[0]
+        self.yPos -= game.mouseIncrement[1]
+        self.xPos %= self.size
+        self.yPos %= self.size
+
+        for i in range(self.columns):
+            for j in range(self.rows):
+                self.screen.blit(self.image, ((i-1)*self.size+self.xPos, (j-1)*self.size+self.yPos))
 
 if __name__ == '__main__':
     pygame.init()
