@@ -39,7 +39,7 @@ class Game:
                 pygame.display.flip() #tearing, double buffering->display buffer/drawing bugffer
             print("\r %i     "%int(clock.get_fps()), end='')
 
-    def toggleCaptureMouse(self):
+    def toggleCaptureMouse (self):
         self.isMouseCaptured = not self.isMouseCaptured 
         pygame.mouse.set_visible(not self.isMouseCaptured) 
         pygame.event.set_grab(self.isMouseCaptured)
@@ -48,14 +48,22 @@ class Target (pygame.sprite.Sprite):
     def __init__ (self, *groups):
         super(Target, self).__init__(*groups)
         self.image = pygame.image.load('DBall.png')
-        self.rect = pygame.rect.Rect((320, 240), self.image.get_size())
+        self.radius = self.image.get_size()[0]
+        self.radius2 = self.radius**2 
+        self.rect = pygame.rect.Rect((320, 240), (self.radius*2, self.radius*2))
 
     def update (self, dt, game):
         last = self.rect.copy()
         movement_increment = pygame.mouse.get_rel()
         self.rect.x -= movement_increment[0]
         self.rect.y -= movement_increment[1]
-        
+        if pygame.mouse.get_pressed()[0]:
+            self.shoot()
+
+    def shoot (self):
+       center =  (self.rect.x + self.radius, self.rect.y + self.radius)
+       print(center)
+       
 
     
 if __name__ == '__main__':
