@@ -36,7 +36,7 @@ class Game:
                         self.toggleCaptureMouse()
 
             self.mouseIncrement = pygame.mouse.get_rel()
-            self.screen.fill(BG_COLOR) #background color
+            #self.screen.fill(BG_COLOR) #background color
             self.background.update(dt, self)
             sprites.update(dt, self)#groups
             sprites.draw(self.screen)
@@ -66,6 +66,10 @@ class Target (pygame.sprite.Sprite):
         self.screen = groups[1]
         self.image = pygame.image.load("./img/target.png")
         self.shootST = pygame.mixer.Sound("./sound/9mmGunshot.wav")
+        self.shootST.set_volume(0.25)
+        #self.hitST = pygame.mixer.Sound("./sound/hit.wav")
+        self.missST = pygame.mixer.Sound("./sound/miss.wav")
+        self.missST.set_volume(0.4)
         self.radius = 16
         self.radius2 = self.radius**2 
         self.image = pygame.transform.scale(self.image, (self.radius*2, self.radius*2))
@@ -76,7 +80,7 @@ class Target (pygame.sprite.Sprite):
     def update (self, dt, game):
         self.timeLived += dt
         if self.timeLived > self.timeToLive:
-            self.respawn()
+            self.miss()
         self.rect.x -= game.mouseIncrement[0]
         self.rect.y -= game.mouseIncrement[1]
         if pygame.mouse.get_pressed()[0]:
@@ -88,23 +92,30 @@ class Target (pygame.sprite.Sprite):
         center = (self.rect.x + self.radius - self.screen.get_width()/2, self.rect.y + self.radius - self.screen.get_height()/2)
         distance2 = center[0]**2 + center[1]**2
         if distance2 < self.radius2:
-            self.respawn()
+            self.hit()
 
     def respawn (self):
         self.timeLived = 0
         self.rect.x = random(0, self.screen.get_width())
         self.rect.y = random(0, self.screen.get_height())
 
+    def miss (self):
+        self.missST.stop()
+        self.missST.play()
+        self.respawn()
+
+    def hit(self):
+        #self.hitST.stop()
+        #self.hitST.play()
+        self.respawn()
+
 class Background:
     def __init__ (self, screen):
         self.screen = screen
         self.image = pygame.image.load("./img/grid.png")
         self.size = self.image.get_width()
-        self.height = self.screen.get_height()
-        self.width = self.screen.get_width()
-        self.columns = self.width//self.size + 3
-        self.rows = self.height//self.size + 3
-        self.rect = pygame.rect.Rect((0,0), self.image.get_size())
+        self.columns = self.screen.get_width()//self.size + 3
+        self.rows = self.screen.get_height()//self.size + 3
         self.xPos = 0
         self.yPos = 0
 
