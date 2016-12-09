@@ -61,9 +61,10 @@ class Target (pygame.sprite.Sprite):
     def __init__ (self, *groups):
         super(Target, self).__init__(groups[0])
         self.screen = groups[1]
+        self.image = pygame.image.load('DBall.png')
+        self.shootST = pygame.mixer.Sound("./sound/9mmGunshot.wav")
         self.radius = 16
         self.radius2 = self.radius**2 
-        self.image = pygame.image.load('DBall.png')
         self.image = pygame.transform.scale(self.image, (self.radius*2, self.radius*2))
         self.rect = pygame.rect.Rect((-self.radius*2, -self.radius*2), (self.radius*2, self.radius*2))
         self.timeToLive = 1500
@@ -80,10 +81,12 @@ class Target (pygame.sprite.Sprite):
             self.shoot()
 
     def shoot (self):
-       center =  (self.rect.x + self.radius - self.screen.get_width()/2, self.rect.y + self.radius - self.screen.get_height()/2)
-       distance2 = center[0]**2 + center[1]**2
-       if distance2 < self.radius2:
-           self.respawn()
+        self.shootST.stop()
+        self.shootST.play()
+        center = (self.rect.x + self.radius - self.screen.get_width()/2, self.rect.y + self.radius - self.screen.get_height()/2)
+        distance2 = center[0]**2 + center[1]**2
+        if distance2 < self.radius2:
+            self.respawn()
 
     def respawn (self):
         self.timeLived = 0
