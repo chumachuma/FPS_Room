@@ -1,4 +1,5 @@
 import pygame
+from random import uniform as random
 
 class Game:
     def __init__ (self):
@@ -17,13 +18,13 @@ class Game:
         clock = pygame.time.Clock() #for using less CPU, events are queued, may miss
         
         sprites = pygame.sprite.OrderedUpdates()
-        self.target = Target(sprites)
+        self.target = Target(sprites, self.screen)
         sprites.add(self.loadCrosshair())
-
         self.toggleCaptureMouse()
 
         while MAIN_LOOP:
-            dt = clock.tick(FPS)
+            clock.tick(FPS)
+            dt = clock.get_time()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
@@ -33,14 +34,11 @@ class Game:
                     if event.key == pygame.K_LCTRL or event.key == pygame.K_RCTRL:
                         self.toggleCaptureMouse()
 
-                ######print(pygame.mouse.get_pressed())
-                
-                screen.fill(BG_COLOR) #background color
-
-                sprites.update(dt/1000., self)#groups
-                sprites.draw(screen)
-                pygame.display.flip() #tearing, double buffering->display buffer/drawing bugffer
-            print("\r %i     "%int(clock.get_fps()), end='')
+            self.screen.fill(BG_COLOR) #background color
+            sprites.update(dt, self)#groups
+            sprites.draw(self.screen)
+            pygame.display.flip() #tearing, double buffering->display buffer/drawing bugffer
+            #print("\r %i     "%int(clock.get_fps()), end='')
 
     def loadCrosshair (self):
         crosshairSize = (32, 32)
@@ -61,14 +59,20 @@ class Game:
 
 class Target (pygame.sprite.Sprite):
     def __init__ (self, *groups):
-        super(Target, self).__init__(*groups)
-        self.image = pygame.image.load('DBall.png')
-        self.radius = self.image.get_size()[0]
+        super(Target, self).__init__(groups[0])
+        self.screen = groups[1]
+        self.radius = 16
         self.radius2 = self.radius**2 
-        self.rect = pygame.rect.Rect((320, 240), (self.radius*2, self.radius*2))
+        self.image = pygame.image.load('DBall.png')
+        self.image = pygame.transform.scale(self.image, (self.radius*2, self.radius*2))
+        self.rect = pygame.rect.Rect((-self.radius*2, -self.radius*2), (self.radius*2, self.radius*2))
+        self.timeToLive = 1500
+        self.timeLived = 0
 
     def update (self, dt, game):
-        last = self.rect.copy()
+        self.timeLived += dt
+        if self.timeLived > self.timeToLive:
+            self.respawn()
         movement_increment = pygame.mouse.get_rel()
         self.rect.x -= movement_increment[0]
         self.rect.y -= movement_increment[1]
@@ -76,14 +80,21 @@ class Target (pygame.sprite.Sprite):
             self.shoot()
 
     def shoot (self):
-       center =  (self.rect.x + self.radius, self.rect.y + self.radius)
-       print(center)
+       center =  (self.rect.x + self.radius - self.screen.get_width()/2, self.rect.y + self.radius - self.screen.get_height()/2)
+       distance2 = center[0]**2 + center[1]**2
+       if distance2 < self.radius2:
+           self.respawn()
+
+    def respawn (self):
+        self.timeLived = 0
+        self.rect.x = random(0, self.screen.get_width())
+        self.rect.y = random(0, self.screen.get_height())
 
 
 if __name__ == '__main__':
     pygame.init()
     print(pygame.display.Info())
-    screen = pygame.display.set_mode((640, 480))
+    screen = pygame.display.set_mode((1280, 720))
     game = Game()
     game(screen)
     pygame.quit()
