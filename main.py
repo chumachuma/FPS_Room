@@ -1,10 +1,26 @@
 import pygame
 from random import uniform as random
 
+images = {}
+
+sounds = {}
+
 class Game:
     def __init__ (self, screen):
         self.isMouseCaptured = False
         self.screen = screen
+
+        global images, sounds
+
+        images["target"] = pygame.image.load("./img/target.png")
+        images["crosshair"] = pygame.image.load("./img/crosshair.png")
+        images["grid"] = pygame.image.load("./img/grid.png")
+
+        sounds["shot"] = pygame.mixer.Sound("./sound/9mmGunshot.wav")
+        sounds["shot"].set_volume(0.25)
+        #sounds["hit"] = pygame.mixer.Sound("./sound/hit.wav")
+        sounds["miss"] = pygame.mixer.Sound("./sound/miss.wav")
+        sounds["miss"].set_volume(0.4)
 
     def __call__ (self):
         self.main()
@@ -54,7 +70,7 @@ class Game:
         crosshairSize = (32, 32)
         center = ((self.screen.get_width()-crosshairSize[0])/2, (self.screen.get_height()-crosshairSize[1])/2)
         crosshair = pygame.sprite.Group()
-        crosshairImg = pygame.image.load("./img/crosshair.png")
+        crosshairImg = images["crosshair"] 
         crosshairImg = pygame.transform.scale(crosshairImg, crosshairSize)
         crosshairSprite = pygame.sprite.Sprite(crosshair)
         crosshairSprite.image = crosshairImg
@@ -70,12 +86,9 @@ class Target (pygame.sprite.Sprite):
     def __init__ (self, *groups):
         super(Target, self).__init__(groups[0])
         self.screen = groups[1]
-        self.image = pygame.image.load("./img/target.png")
-        self.shootST = pygame.mixer.Sound("./sound/9mmGunshot.wav")
-        self.shootST.set_volume(0.25)
-        #self.hitST = pygame.mixer.Sound("./sound/hit.wav")
-        self.missST = pygame.mixer.Sound("./sound/miss.wav")
-        self.missST.set_volume(0.4)
+        self.image = images["target"]
+        self.shootST = sounds["shot"]
+        self.missST = sounds["miss"]
         self.radius = 16
         self.radius2 = self.radius**2 
         self.image = pygame.transform.scale(self.image, (self.radius*2, self.radius*2))
@@ -117,7 +130,7 @@ class Target (pygame.sprite.Sprite):
 
 class Background:
     def __init__ (self, screen):
-        self.image = pygame.image.load("./img/grid.png")
+        self.image = images["grid"]
         self.size = self.image.get_width()
         self.columns = screen.get_width()//self.size + 3
         self.rows = screen.get_height()//self.size + 3
