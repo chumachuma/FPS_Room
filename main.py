@@ -6,10 +6,6 @@ sounds = {}
 
 class Game:
     def __init__ (self, screen):
-        self.isMouseCaptured = False
-        self.screen = screen
-        self.stats = Statistics()
-
         global images, sounds
 
         images["target"] = pygame.image.load("./img/target.png")
@@ -22,13 +18,20 @@ class Game:
         sounds["miss"] = pygame.mixer.Sound("./sound/miss.wav")
         sounds["miss"].set_volume(0.4)
 
+        self.isMouseCaptured = False
+        self.screen = screen
+        self.stats = Statistics()
+        self.triggerShot = False
+
+        self.shootST = sounds["shot"]
+
     def __call__ (self):
         self.main()
         self.exit()
 
     def main (self):
         MAIN_LOOP = True
-        FPS = 60
+        FPS = 100
         BG_COLOR = (200, 200, 200)
         NUM_TARGETS = 2
 
@@ -45,6 +48,10 @@ class Game:
         while MAIN_LOOP:
             clock.tick(FPS)
             dt = clock.get_time()
+
+            if (self.triggerShot):
+                self.triggerShot = False
+
             MAIN_LOOP = self.gameEvent()
 
             self.mouseIncrement = pygame.mouse.get_rel()
@@ -70,6 +77,11 @@ class Game:
                     return False
                 if event.key == pygame.K_LCTRL or event.key == pygame.K_RCTRL:
                     self.toggleCaptureMouse()
+                if event.key == pygame.K_r:
+                    self.stats.restart()
+            if pygame.mouse.get_pressed()[0]:
+                self.shoot()
+            
         return True
 
     def loadCrosshair (self):
@@ -88,13 +100,18 @@ class Game:
         pygame.mouse.set_visible(not self.isMouseCaptured) 
         pygame.event.set_grab(self.isMouseCaptured)
 
+    def shoot (self):
+        self.shootST.stop()
+        self.shootST.play()
+        self.triggerShot = True
+        self.stats.shoot()
+
 
 class Target (pygame.sprite.Sprite):
     def __init__ (self, *groups):
         super(Target, self).__init__(groups[0])
         self.screen = groups[1]
         self.image = images["target"]
-        self.shootST = sounds["shot"]
         self.missST = sounds["miss"]
         self.radius = 16
         self.radius2 = self.radius**2 
@@ -114,13 +131,10 @@ class Target (pygame.sprite.Sprite):
             self.miss()
         self.rect.x -= game.mouseIncrement[0]
         self.rect.y -= game.mouseIncrement[1]
-        if pygame.mouse.get_pressed()[0]:
+        if game.triggerShot:
             self.shoot()
 
     def shoot (self):
-        game.stats.shoot()
-        self.shootST.stop()
-        self.shootST.play()
         center = (self.rect.x + self.radius - self.screen.get_width()/2, self.rect.y + self.radius - self.screen.get_height()/2)
         distance2 = center[0]**2 + center[1]**2
         if distance2 < self.radius2:
@@ -166,6 +180,14 @@ class Background:
 
 class Statistics:
     def __init__ (self):
+        self.shots = 0
+        self.hits = 0
+        self.escapes = 0
+        self.speed = 0
+        self.accuracy = []
+        self.isStarted = False
+
+    def restart (self):
         self.shots = 0
         self.hits = 0
         self.escapes = 0
