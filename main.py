@@ -22,6 +22,7 @@ class Game:
         self.screen = screen
         self.stats = Statistics()
         self.triggerShot = False
+        self.shotToken = False
 
         self.shootST = sounds["shot"]
 
@@ -49,6 +50,8 @@ class Game:
             clock.tick(FPS)
             dt = clock.get_time()
 
+            if self.shotToken:
+                self.shotToken = False
             if self.triggerShot and not pygame.mouse.get_pressed()[0]:
                 self.triggerShot = False
 
@@ -104,6 +107,7 @@ class Game:
         self.shootST.stop()
         self.shootST.play()
         self.triggerShot = True
+        self.shotToken = True
         self.stats.shoot()
 
 
@@ -133,7 +137,7 @@ class Target (pygame.sprite.Sprite):
             self.miss()
         self.rect.x -= game.mouseIncrement[0]
         self.rect.y -= game.mouseIncrement[1]
-        if game.triggerShot:
+        if game.shotToken:
             self.shoot()
 
     def shoot (self):
@@ -144,6 +148,7 @@ class Target (pygame.sprite.Sprite):
 
     def respawn (self):
         self.timeLived = 0
+        self.lives = self.maxLives
         self.rect.x = random(*self.hGen)
         self.rect.y = random(*self.vGen)
 
@@ -156,8 +161,11 @@ class Target (pygame.sprite.Sprite):
     def hit(self):
         #self.hitST.stop()
         #self.hitST.play()
-        game.stats.hit(self.timeLived)
-        self.respawn()
+        self.lives -= 1
+        game.stats.hit()
+        if not self.lives:
+            game.stats.kill(self.timeLived)
+            self.respawn()
 
 
 class Background:
@@ -204,10 +212,12 @@ class Statistics:
         if self.isStarted:
             self.escapes += 1
 
-    def hit (self, speed=0):
+    def hit (self):
         if not self.isStarted:
             self.isStarted = True
         self.hits += 1
+
+    def kill (self, speed):
         self.speed += speed
 
     def get_accuracy (self):
