@@ -71,8 +71,9 @@ class Game:
             sprites.draw(self.screen)
             pygame.display.flip() #tearing, double buffering->display buffer/drawing bugffer
 
-            print("\r FPS:%.2f  ACC:%.2f%%  SPD:%.2f HIT:%i  ESC:%i  SHT:%i  " % 
-                (clock.get_fps(), self.stats.get_accuracy(), self.stats.get_speed(), self.stats.hits, self.stats.escapes, self.stats.shots), 
+            print("\r FPS:%.2f  ACC:%.2f%%  SPD:%.2f HIT:%i  KILL:%i  ESC:%i  SHT:%i     " % 
+                (clock.get_fps(), self.stats.get_accuracy(), self.stats.get_speed(), self.stats.hits, 
+                    self.stats.kills, self.stats.escapes, self.stats.shots), 
                 end='')
 
     def exit (self):
@@ -155,7 +156,6 @@ class Target (pygame.sprite.Sprite):
         distance2 = center[0]**2 + center[1]**2
         if distance2 < self.radius2:
             self.hit()
-        print("\n", self.velocityX, self.velocityY)
 
     def respawn (self):
         self.timeLived = 0
@@ -207,6 +207,7 @@ class Statistics:
         self.shots = 0
         self.hits = 0
         self.escapes = 0
+        self.kills = 0
         self.speed = 0
         self.accuracy = []
         self.isStarted = False
@@ -215,6 +216,7 @@ class Statistics:
         self.shots = 0
         self.hits = 0
         self.escapes = 0
+        self.kills = 0
         self.speed = 0
         self.accuracy = []
         self.isStarted = False
@@ -232,6 +234,7 @@ class Statistics:
         self.hits += 1
 
     def kill (self, speed):
+        self.kills += 1
         self.speed += speed
 
     def get_accuracy (self):
@@ -256,6 +259,6 @@ if __name__ == '__main__':
             resolution = (1920, 1080)
     screen = pygame.display.set_mode(resolution, pygame.DOUBLEBUF)
     screen.set_alpha(None) #increse speed
-    game = Game(screen)
+    game = Game(screen, targetNumber=1, targetVelocity=1.5)
     game()
     pygame.quit()
