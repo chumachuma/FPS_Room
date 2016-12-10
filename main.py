@@ -1,11 +1,13 @@
 import pygame
 from random import uniform as random
+from math import sin, cos, pi
+from sys import argv
 
 images = {}
 sounds = {}
 
 class Game:
-    def __init__ (self, screen, targetNumber=2, targetSize=16, targetTTL=2000, targetLives=2):
+    def __init__ (self, screen, targetNumber=2, targetSize=16, targetTTL=2000, targetLives=2, targetVelocity=1):
         global images, sounds
 
         images["target"] = pygame.image.load("./img/target.png")
@@ -30,6 +32,7 @@ class Game:
         self.targetSize = targetSize
         self.targetTTL = targetTTL
         self.targetLives = targetLives
+        self.targetVelocity = targetVelocity
 
     def __call__ (self):
         self.main()
@@ -46,7 +49,7 @@ class Game:
         self.background = Background(self.screen)
         self.targets = []
         for i in range(self.targetNumber):
-            self.targets.append(Target(sprites, self.screen, self.targetSize, self.targetTTL, self.targetLives))
+            self.targets.append(Target(sprites, self.screen, self.targetSize, self.targetTTL, self.targetLives, self.targetVelocity))
         sprites.add(self.loadCrosshair())
         self.toggleCaptureMouse()
 
@@ -129,6 +132,9 @@ class Target (pygame.sprite.Sprite):
         self.timeLived = 0
         self.maxLives = groups[4]
         self.lives = self.maxLives
+        self.maxSpeed = groups[5]
+        self.velocityX = 0
+        self.velocityY = 0.001
 
         self.hGenRange = 0.1
         self.vGenRange = 0.25
@@ -139,8 +145,8 @@ class Target (pygame.sprite.Sprite):
         self.timeLived += dt
         if self.timeLived > self.timeToLive:
             self.miss()
-        self.rect.x -= game.mouseIncrement[0]
-        self.rect.y -= game.mouseIncrement[1]
+        self.rect.x += self.velocityX*dt - game.mouseIncrement[0]
+        self.rect.y += self.velocityY*dt - game.mouseIncrement[1]
         if game.shotToken:
             self.shoot()
 
@@ -149,12 +155,16 @@ class Target (pygame.sprite.Sprite):
         distance2 = center[0]**2 + center[1]**2
         if distance2 < self.radius2:
             self.hit()
+        print("\n", self.velocityX, self.velocityY)
 
     def respawn (self):
         self.timeLived = 0
         self.lives = self.maxLives
         self.rect.x = random(*self.hGen)
         self.rect.y = random(*self.vGen)
+        angle = random(0, 2*pi)
+        self.velocityX = cos(angle)*self.maxSpeed/10 #100px/s
+        self.velocityY = sin(angle)*self.maxSpeed/10 #100px/s
 
     def miss (self):
         game.stats.escape()
@@ -238,7 +248,13 @@ class Statistics:
 if __name__ == '__main__':
     pygame.init()
     print(pygame.display.Info())
-    screen = pygame.display.set_mode((1280, 720), pygame.DOUBLEBUF)
+    resolution = (640, 480)
+    if argv.__len__() > 1:
+        if argv[1] == "1280":
+            resolution = (1280, 720)
+        elif argv[1] == "1920":
+            resolution = (1920, 1080)
+    screen = pygame.display.set_mode(resolution, pygame.DOUBLEBUF)
     screen.set_alpha(None) #increse speed
     game = Game(screen)
     game()
