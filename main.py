@@ -31,7 +31,7 @@ class Game:
 
     def main (self):
         MAIN_LOOP = True
-        FPS = 100
+        FPS = 60
         BG_COLOR = (200, 200, 200)
         NUM_TARGETS = 2
 
@@ -55,7 +55,7 @@ class Game:
             MAIN_LOOP = self.gameEvent()
 
             self.mouseIncrement = pygame.mouse.get_rel()
-            #self.screen.fill(BG_COLOR) #background color
+            self.screen.fill(BG_COLOR) #background color
             self.background.update(dt, self)
             sprites.update(dt, self)#groups
             sprites.draw(self.screen)
@@ -222,7 +222,8 @@ class Statistics:
 if __name__ == '__main__':
     pygame.init()
     print(pygame.display.Info())
-    screen = pygame.display.set_mode((1280, 720))
+    screen = pygame.display.set_mode((1280, 720), pygame.DOUBLEBUF)
+    screen.set_alpha(None) #increse speed
     game = Game(screen)
     game()
     pygame.quit()
