@@ -41,7 +41,7 @@ class Game:
         self.background = Background(self.screen)
         self.targets = []
         for i in range(NUM_TARGETS):
-            self.targets.append(Target(sprites, self.screen))
+            self.targets.append(Target(sprites, self.screen, 16, 2000, 2))
         sprites.add(self.loadCrosshair())
         self.toggleCaptureMouse()
 
@@ -49,7 +49,7 @@ class Game:
             clock.tick(FPS)
             dt = clock.get_time()
 
-            if (self.triggerShot):
+            if self.triggerShot and not pygame.mouse.get_pressed()[0]:
                 self.triggerShot = False
 
             MAIN_LOOP = self.gameEvent()
@@ -61,8 +61,8 @@ class Game:
             sprites.draw(self.screen)
             pygame.display.flip() #tearing, double buffering->display buffer/drawing bugffer
 
-            print("\r FPS:%.2f  ACC:%.2f%%  SPD:%.2f HIT:%i  ESC:%i    " % 
-                (clock.get_fps(), self.stats.get_accuracy(), self.stats.get_speed(), self.stats.hits, self.stats.escapes), 
+            print("\r FPS:%.2f  ACC:%.2f%%  SPD:%.2f HIT:%i  ESC:%i  SHT:%i  " % 
+                (clock.get_fps(), self.stats.get_accuracy(), self.stats.get_speed(), self.stats.hits, self.stats.escapes, self.stats.shots), 
                 end='')
 
     def exit (self):
@@ -79,7 +79,7 @@ class Game:
                     self.toggleCaptureMouse()
                 if event.key == pygame.K_r:
                     self.stats.restart()
-            if pygame.mouse.get_pressed()[0]:
+            if pygame.mouse.get_pressed()[0] and not self.triggerShot:
                 self.shoot()
             
         return True
@@ -113,12 +113,14 @@ class Target (pygame.sprite.Sprite):
         self.screen = groups[1]
         self.image = images["target"]
         self.missST = sounds["miss"]
-        self.radius = 16
+        self.radius = groups[2]
         self.radius2 = self.radius**2 
         self.image = pygame.transform.scale(self.image, (self.radius*2, self.radius*2))
         self.rect = pygame.rect.Rect((-self.radius*2, -self.radius*2), (self.radius*2, self.radius*2))
-        self.timeToLive = 2000
+        self.timeToLive = groups[3] 
         self.timeLived = 0
+        self.maxLives = groups[4]
+        self.lives = self.maxLives
 
         self.hGenRange = 0.1
         self.vGenRange = 0.25
