@@ -5,7 +5,7 @@ images = {}
 sounds = {}
 
 class Game:
-    def __init__ (self, screen):
+    def __init__ (self, screen, targetNumber=2, targetSize=16, targetTTL=2000, targetLives=2):
         global images, sounds
 
         images["target"] = pygame.image.load("./img/target.png")
@@ -26,6 +26,11 @@ class Game:
 
         self.shootST = sounds["shot"]
 
+        self.targetNumber = targetNumber
+        self.targetSize = targetSize
+        self.targetTTL = targetTTL
+        self.targetLives = targetLives
+
     def __call__ (self):
         self.main()
         self.exit()
@@ -34,15 +39,14 @@ class Game:
         MAIN_LOOP = True
         FPS = 60
         BG_COLOR = (200, 200, 200)
-        NUM_TARGETS = 2
 
         clock = pygame.time.Clock() #for using less CPU, events are queued, may miss
         
         sprites = pygame.sprite.OrderedUpdates()
         self.background = Background(self.screen)
         self.targets = []
-        for i in range(NUM_TARGETS):
-            self.targets.append(Target(sprites, self.screen, 16, 2000, 2))
+        for i in range(self.targetNumber):
+            self.targets.append(Target(sprites, self.screen, self.targetSize, self.targetTTL, self.targetLives))
         sprites.add(self.loadCrosshair())
         self.toggleCaptureMouse()
 
